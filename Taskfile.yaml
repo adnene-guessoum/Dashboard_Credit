@@ -1,0 +1,36 @@
+version: "3"
+
+tasks:
+  install:
+    desc: Installs the dependencies.
+    cmds:
+      - poetry install --no-root
+
+  lint:
+    desc: Lints the code and report issues.
+    cmds:
+      #- poetry run mypy --install-types client/ # --ignore-missing-imports
+      - poetry run black client/
+      - poetry run flake8 client/ --ignore=F405,F403 --show-source --statistics --count
+      - poetry run pylint client/
+
+  test:
+    desc: Runs test on code
+    cmds:
+      - >
+        poetry run pytest
+        --cov=client/
+        --cov-report=html
+
+  generate-changelog:
+    desc: Generates the changelog
+    cmds:
+      - poetry run git-changelog --output CHANGELOG.md
+
+  docs-serve:
+    desc: Serve the documentation locally
+    deps:
+      - test
+      - generate-changelog
+    cmds:
+      - poetry run mkdocs serve
