@@ -25,6 +25,7 @@ from sklearn.metrics import (
 from sklearn.metrics import fbeta_score, precision_score, recall_score
 from tools.utils import *
 from io import BytesIO
+import pickle
 import joblib
 import shap
 
@@ -35,8 +36,8 @@ df = pd.read_csv(path_df)
 df = df.drop(["Unnamed: 0"], axis=1)
 
 # Load model
-path_model = "client/saved_model_data/model_final_recompiled.joblib.dat"
-model = joblib.load(open(path_model, "rb"))
+path_model = "client/saved_model_data/model_final_recompiled.pkl"
+model = pickle.load(open(path_model, "rb"))
 # data = cleaning(df)
 
 # Load explainer:
@@ -47,7 +48,7 @@ with open(file_path, "rb") as f:
 file_path = "client/saved_model_data/restricted_model_explainer"
 # model_explainer = pickle.load(open(file_path,'rb'))
 with open(file_path, "rb") as f:
-    model_explainer = joblib.load(f)
+    model_explainer = pickle.load(f)
 
 file_path = "client/saved_model_data/restricted_expected_values"
 with open(file_path, "rb") as f:
