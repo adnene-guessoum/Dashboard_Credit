@@ -33,35 +33,35 @@ import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import plotly.graph_objects as go
-import seaborn as sns
+import plotly.graph_objects as go  # type: ignore
+import seaborn as sns  # type: ignore
 import pickle
 
 # metrics
-from sklearn.metrics import (
-        roc_auc_score,
-        roc_curve,
-        confusion_matrix,
-        )
+from sklearn.metrics import (  # type: ignore
+    roc_auc_score,
+    roc_curve,
+    confusion_matrix,
+)
 from sklearn.metrics import fbeta_score, precision_score, recall_score
-from tools.utils import *
 from io import BytesIO
-import joblib
+import joblib  # type: ignore
 import xgboost as xgb
-import shap
+from .utils import *
+import shap  # type: ignore
 
 shap.initjs()
 
 # load small dataset:
-path_df = 'output_data/selected_feature_dataset'
+path_df = "output_data/selected_feature_dataset"
 df = pd.read_csv(path_df)
 # df = df.drop(["Unnamed: 0"], axis = 1)
 
-#Load variable descriptions:
-path_desc = 'output_data/desc_features.csv'
+# Load variable descriptions:
+path_desc = "output_data/desc_features.csv"
 variables_description = load_data(path_desc)
 
-liste_id = df['ID'].tolist()
+liste_id = df["ID"].tolist()
 data = cleaning(df)
 
 # Load model
@@ -170,15 +170,15 @@ def visualisation_distribution_target(datafr):
     labels = ["Pas de défaut", "Défaut", "Info non disponible"]
 
     fig = go.Figure(
-            data=[
-                go.Pie(
-                    values=target_distribution,
-                    labels=labels,
-                    textinfo="label+percent+value",
-                    )
-                ],
-            layout=go.Layout(title="Visualiser le déséquilibre des classes"),
+        data=[
+            go.Pie(
+                values=target_distribution,
+                labels=labels,
+                textinfo="label+percent+value",
             )
+        ],
+        layout=go.Layout(title="Visualiser le déséquilibre des classes"),
+    )
 
     st.header("Camembert : Distribution de la Target")
     st.plotly_chart(fig)
@@ -197,16 +197,16 @@ def visualisation_univar(datafr):
     """
 
     df_cat = datafr[["TARGET", "CODE_GENDER", "NAME_FAMILY_STATUS_Married"]].astype(
-            "category"
-            )
+        "category"
+    )
     df_num = datafr[
-            [
-                "AMT_CREDIT",
-                "DAYS_EMPLOYED",
-                "DAYS_LAST_PHONE_CHANGE",
-                "PAYMENT_RATE",
-                ]
-            ]
+        [
+            "AMT_CREDIT",
+            "DAYS_EMPLOYED",
+            "DAYS_LAST_PHONE_CHANGE",
+            "PAYMENT_RATE",
+        ]
+    ]
 
     st.markdown("Nos trois variables catégorielles: défaut, sexe et statut marital :")
     for i in df_cat.columns:
@@ -262,11 +262,11 @@ def interpretation_global(sample_nb):
 
     fig = plt.figure()
     plt.plot(
-            fpr_train_gbt,
-            tpr_train_gbt,
-            color="blue",
-            label="AUC_globale = %0.2f" % auc_train_model,
-            )
+        fpr_train_gbt,
+        tpr_train_gbt,
+        color="blue",
+        label="AUC_globale = %0.2f" % auc_train_model,
+    )
     plt.plot(np.arange(0, 1.1, 0.1), np.arange(0, 1.1, 0.1), color="red")
     plt.legend(loc="lower right")
     plt.xlabel("False Positive Rate")
@@ -284,15 +284,15 @@ def interpretation_global(sample_nb):
     st.write("positif : client fait défaut")
     st.write("négatif : client ne fait pas défaut")
     st.write(
-            "vrai negatif : ",
-            tn,
-            ", faux positif : ",
-            fp,
-            ", faux negatif : ",
-            fn,
-            ", vrai positif : ",
-            tp,
-            )
+        "vrai negatif : ",
+        tn,
+        ", faux positif : ",
+        fp,
+        ", faux negatif : ",
+        fn,
+        ", vrai positif : ",
+        tp,
+    )
     st.write("--------------------------------------------------")
 
     st.write("score crédit global des clients actuels : ", credit_metric(fn, fp))
@@ -306,33 +306,33 @@ def interpretation_global(sample_nb):
     st.write("aire sous la courbe ROC (bon si proche de 1) : ", auc_gbt)
 
     st.write(
-            'Proportion de prédiction correcte parmis tout ce que le modèle prédit \
+        'Proportion de prédiction correcte parmis tout ce que le modèle prédit \
                     comme "mauvais clients" (vrais positifs / tous prédits positifs) :',
-                    precision_score(true_y, predictions),
-                    )
+        precision_score(true_y, predictions),
+    )
 
     st.write(
-            "Probabilité de détecter un vrai défaut (vrais positifs détectés / tous \
+        "Probabilité de détecter un vrai défaut (vrais positifs détectés / tous \
                     vrais positifs) :",
-                    recall_score(true_y, predictions),
-                    )
+        recall_score(true_y, predictions),
+    )
 
     st.write(
-            'Proportion de prédiction correcte parmis tout ce que le modèle prédit \
+        'Proportion de prédiction correcte parmis tout ce que le modèle prédit \
                     comme "bon clients" (vrais négatifs détéctés / tous \
                     vrais négatifs) :',
-                    tn / (tn + fp),
-                    )
+        tn / (tn + fp),
+    )
 
     st.write("-------------------------------------------------------")
     st.write("Explication globale du modèle avec SHAP:")
 
     # plot 1
     st.write(
-            "Classement et résumé global de l'importance des features pour \
+        "Classement et résumé global de l'importance des features pour \
                     le modèle d'après leurs influences respectives dans l'octroie \
                     de crédit des clients:"
-                    )
+    )
     fig1 = plt.figure()
     sum_plot = shap.summary_plot(shap_values, pred_data)
     st.pyplot(fig1)
@@ -345,27 +345,27 @@ def interpretation_global(sample_nb):
 
     # plot 3
     st.write(
-            "Description du processus de décision pour le sous-ensemble \
+        "Description du processus de décision pour le sous-ensemble \
                     aléatoire de clients:"
-                    )
+    )
     sub_sample = pred_data.sample(n=sample_nb)
     shap_values_sub = model_explainer.shap_values(sub_sample)
     fig4 = plt.figure()
     dec_plot_sample = shap.decision_plot(
-            exp_vals.tolist(), shap_values_sub, features=pred_data, highlight=[1]
-            )
+        exp_vals.tolist(), shap_values_sub, features=pred_data, highlight=[1]
+    )
     st.pyplot(fig4)
 
     # plot 4
     st.write(
-            "Influences respectives des features pour la décision d'octroyer \
+        "Influences respectives des features pour la décision d'octroyer \
                     le crédit aux clients du sous ensemble :"
-                    )
+    )
 
     for i, j in enumerate(shap_values_sub):
         st.write(
-                "-------------------------------------------------------------------------"
-                )
+            "-------------------------------------------------------------------------"
+        )
         st.write("client aléatoire " + str(i + 1))
         fig = plt.figure()
         B_plot = shap.bar_plot(j, pred_data)
@@ -405,16 +405,16 @@ def interpretation_client(id_input):
     feature_values = dict(individual_data)
 
     option = st.selectbox(
-            "Veuillez indiquez la variable à chercher : ", feature_values.keys()
-            )
+        "Veuillez indiquez la variable à chercher : ", feature_values.keys()
+    )
 
     st.write(feature_values[option])
 
     st.write("----------------------------------------------")
     st.write(
-            "Graphiques explicatifs de la prédiction pour le client (variables \
+        "Graphiques explicatifs de la prédiction pour le client (variables \
                     ayant le plus significativement contribué à la décision):"
-                    )
+    )
     st.write("----------------------------------------------")
 
     st.write("Contribution des variables principales à la prédiction pour ce client:")
@@ -425,77 +425,91 @@ def interpretation_client(id_input):
 
     st.write("----------------------------------------------")
     st.write(
-            "Contribution des variables les plus imprtantes dans le classement du client :"
-            )
+        "Contribution des variables les plus imprtantes dans le classement du client :"
+    )
     fig = plt.figure()
     # Insert first SHAP plot here
     F_plot = shap.force_plot(
-            model_explainer.expected_value, shap_values, individual_data
-            )
+        model_explainer.expected_value, shap_values, individual_data
+    )
     st_shap(F_plot, 150)
     # st.pyplot(fig)
 
     st.write("----------------------------------------------")
     st.write(
-            "Top 7 des variables les plus imprtantes pour ce client (et sens de l'influence)"
-            )
+        "Top 7 des variables les plus imprtantes pour ce client (et sens de l'influence)"
+    )
 
     fig3 = plt.figure()
     B_plot = shap.bar_plot(shap_values[0], pred_data)
     st.pyplot(fig3)
 
-def display_filtered_client_visualisation(df: pd.DataFrame) -> None:
-    """ 
+
+def display_filtered_client_visualisation(df: pd.DataFrame) -> pd.DataFrame:
+    """
     Fonction qui affiche les données filtrées par l'utilisateur
     Parameters
     ----------
     df : pd.dataFrame
     données clients filtrées selon les critères choisis par l'utilisateur
     """
-    Gender = list(df['CODE_GENDER'].unique())
+    Gender = list(df["CODE_GENDER"].unique())
 
-    marit_status = list(df['NAME_FAMILY_STATUS_Married'].unique())
+    marit_status = list(df["NAME_FAMILY_STATUS_Married"].unique())
 
     amount = df["AMT_CREDIT"]
 
-
     st.markdown("Filtres disponibles pour les données :")
 
-    gender_choice = st.multiselect("sexe : F = " + str(1) + " ; M = " + str(0) , Gender, Gender)
+    gender_choice = st.multiselect(
+        "sexe : F = " + str(1) + " ; M = " + str(0), Gender, Gender
+    )
 
+    marital_choice = st.multiselect(
+        "Married = " + str(1) + " ; not Married = " + str(0), marit_status, marit_status
+    )
 
-    marital_choice = st.multiselect("Married = " + str(1) + " ; not Married = " + str(0) ,
-                                    marit_status, marit_status)
+    amount_credit = st.slider(
+        "AMT_CREDIT",
+        float(amount.min()),
+        float(amount.max()),
+        (float(amount.min()), float(amount.max())),
+        1000.0,
+    )
 
+    mask_gender = df["CODE_GENDER"].isin(gender_choice)
+    mask_marital = df["NAME_FAMILY_STATUS_Married"].isin(marital_choice)
 
-    amount_credit = st.slider('AMT_CREDIT',
-                              float(amount.min()), float(amount.max()),
-                              (float(amount.min()), float(amount.max())),
-                              1000.0)
+    # get the parties with a number of members in the range of nb_mbrs
+    # TODO: check the type error here: between is not a method of Series[float]
+    mask_amount_credit = df["AMT_CREDIT"].between(amount_credit[0], amount_credit[1])  # type: ignore
 
-
-    mask_gender = df['CODE_GENDER'].isin(gender_choice)
-    mask_marital = df['NAME_FAMILY_STATUS_Married'].isin(marital_choice)
-
-        #get the parties with a number of members in the range of nb_mbrs
-    mask_amount_credit = df['AMT_CREDIT'].between(amount_credit[0], amount_credit[1])
+    print(
+        "mask_amount_credit : ", mask_amount_credit, "type : ", type(mask_amount_credit)
+    )
+    print(type(mask_marital))
+    print(type(mask_gender))
 
     df_filtered = df[mask_gender & mask_marital & mask_amount_credit]
 
-
-    st.write('----------------------------------------')
+    st.write("----------------------------------------")
     st.write("tableau de données filtrées : ")
 
-    st.write('Description des variables :')
+    st.write("Description des variables :")
 
     Colonnes = list(df_filtered.columns)
 
-    Col_choice = st.multiselect('variables à observer dans les données \
-            filtrées :', Colonnes, default=("ID","TARGET"))
+    Col_choice = st.multiselect(
+        "variables à observer dans les données \
+            filtrées :",
+        Colonnes,
+        default=("ID", "TARGET"),
+    )
 
     st.dataframe(df_filtered[Col_choice])
 
     return df_filtered
+
 
 def display_homepage() -> None:
     """
@@ -603,7 +617,7 @@ def display_predict_page() -> None:
 
         with st.spinner("Chargement du score du client..."):
             # Appel de l'API :
-            call_api(int(id_input), API_url)
+            call_api(int(id_input), API_url, df)
 
         with st.spinner("Chargement des détails de la prédiction..."):
             interpretation_client(id_input)
