@@ -31,7 +31,6 @@ jobs:
           key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
 
       - name: Install Task
-        # TODO
         run: |
           sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
 
@@ -46,11 +45,6 @@ jobs:
           ./bin/task install
 
           # Run our linting
-      - name: Lint code
+      - name: Integration run
         run: |
-          ./bin/task lint
-
-          # Run the unit tests
-      - name: Test code
-        run: |
-          ./bin/task test
+          ./bin/task integration

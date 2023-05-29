@@ -1,3 +1,6 @@
+"""
+    fichier import des fonctions de l'application dans ce module
+"""
 # flake8: noqa
 # from .analysis_functions import *
 # from .display_utils import *

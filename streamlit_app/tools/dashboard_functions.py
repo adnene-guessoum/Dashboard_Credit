@@ -1,14 +1,17 @@
-# -*- coding: utf-8 -*-
 """
-Fonctions pour le dashboard streamlit de visualisation des données et des résultats du modèle.
+Fonctions pour le dashboard streamlit de visualisation des données
+et des résultats du modèle.
 
-à l'inverse d'utils.py, ce fichier est destiné à être utilisé dans le dashboard streamlit directement et est dépendant de shap et de la nature particulière du projet.
+à l'inverse d'utils.py, ce fichier est destiné à être utilisé dans
+le dashboard streamlit directement et est dépendant de shap et de la
+nature particulière du projet.
 
 liste des fonctions:
 
     - credit_score
     - credit_metric
     - st_shap
+    - call_api
 
     - informations_data
 
@@ -27,15 +30,18 @@ liste des fonctions:
 
 """
 
-import streamlit as st
-import streamlit.components.v1 as components
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go  # type: ignore
 import seaborn as sns  # type: ignore
 import pickle
+import json
+from urllib.request import urlopen
+from io import BytesIO
+
+import streamlit as st
+import streamlit.components.v1 as components
 
 # metrics
 from sklearn.metrics import (  # type: ignore
@@ -44,42 +50,43 @@ from sklearn.metrics import (  # type: ignore
     confusion_matrix,
 )
 from sklearn.metrics import fbeta_score, precision_score, recall_score
-from io import BytesIO
-import joblib  # type: ignore
-import xgboost as xgb
-from .utils import *
 import shap  # type: ignore
 
 shap.initjs()
 
-# load small dataset:
-path_df = "output_data/selected_feature_dataset"
-df = pd.read_csv(path_df)
+from .utils import load_data, cleaning
+# load dataset:
+PATH_DF = "output_data/selected_feature_dataset"
+df = pd.read_csv(PATH_DF)
 # df = df.drop(["Unnamed: 0"], axis = 1)
 
 # Load variable descriptions:
-path_desc = "output_data/desc_features.csv"
-variables_description = load_data(path_desc)
+PATH_DESC = "output_data/desc_features.csv"
+variables_description = load_data(PATH_DESC)
 
 liste_id = df["ID"].tolist()
 data = cleaning(df)
 
 # Load model
-path_model = "output_data/rec28052023_model_final.pickle.dat"
-model = pickle.load(open(path_model, "rb"))
+PATH_MODEL = "output_data/rec28052023_model_final.pickle.dat"
+with open(PATH_MODEL, "rb") as f:
+    model = pickle.load(f)
 # data = cleaning(df)
 
 # Load explainer:
-file_path = "output_data/shap_values"
-shap_values = pickle.load(open(file_path, "rb"))
+FILE_PATH = "output_data/shap_values"
+with open(FILE_PATH, "rb") as f:
+    shap_values = pickle.load(f)
 
-# model_explainer = pickle.load(open(file_path,'rb'))
-file_path = "output_data/model_explainer_bis"
-model_explainer = pickle.load(open(file_path, "rb"))
+# model_explainer = pickle.load(open(FILE_PATH,'rb'))
+FILE_PATH = "output_data/model_explainer_bis"
+with open(FILE_PATH, "rb") as f:
+    model_explainer = pickle.load(f)
 
 # Load expected values:
-file_path = "output_data/expected_values"
-exp_vals = pickle.load(open(file_path, "rb"))
+FILE_PATH = "output_data/expected_values"
+with open(FILE_PATH, "rb") as f:
+    exp_vals = pickle.load(f)
 
 # Split data
 train_df = df[df["TARGET"].notnull()]
@@ -112,17 +119,20 @@ def credit_score(y_true, y_pred):
     """
 
     # false positive
-    fp = ((y_pred == 1) & (y_true == 0)).sum()
+    false_positive = ((y_pred == 1) & (y_true == 0)).sum()
 
     # false negative
-    fn = ((y_pred == 0) & (y_true == 1)).sum()
+    false_negative = ((y_pred == 0) & (y_true == 1)).sum()
 
-    cs = 10 * fn + fp
-    return cs
+    cred_score = 10 * false_negative + false_positive
+    return cred_score
 
 
-def credit_metric(x, y):
-    return 10 * x + y
+def credit_metric(x_arg, y_arg):
+    """
+    fonction de calcul du score métier pour le projet.
+    """
+    return 10 * x_arg + y_arg
 
 
 def st_shap(plot, height=None):
@@ -131,6 +141,59 @@ def st_shap(plot, height=None):
     """
     shap_html = f"<head>{shap.getjs()}</head><body>{plot.html()}</body>"
     components.html(shap_html, height=height)
+
+
+def call_api(input_data: int, api_url: str, dataframe: pd.DataFrame):
+    """
+    This function calls the Flask API with the client Id (input data).
+
+    Parameters
+    ----------
+    input_data : dict
+        The input data for the API.
+
+    Returns
+    -------
+    response : dict
+        The response of the API.
+    """
+
+    with st.spinner("Appel de l'API en cours..."):
+        json_url = urlopen(api_url)
+
+    api_data = json.loads(json_url.read())
+    classe_predite = api_data["prediction"]
+    if classe_predite == 1:
+        etat = "client à risque"
+        proba = 1 - api_data["proba"]
+    else:
+        etat = "client peu risqué"
+        proba = 1 - api_data["proba"]
+
+    # affichage de la prédiction
+    classe = dataframe[dataframe["ID"] == input_data]["TARGET"].values[0]
+
+    if np.isnan(classe):
+        classe_reelle = "pas de données réelles pour ce client (client test)"
+    else:
+        classe_reelle = (
+            str(classe)
+            .replace("0.0", "pas de défaut sur le crédit octroyé")
+            .replace("1.0", "défaut sur le crédit octroyé")
+        )
+
+    chaine_prediction = (
+        "Prédiction : **"
+        + etat
+        + "** avec **"
+        + str(round(proba * 100))
+        + "%** de\
+                risque de défaut "
+    )
+    chaine_realite = "classe réelle : " + str(classe_reelle)
+
+    st.markdown(chaine_prediction)
+    st.markdown(chaine_realite)
 
 
 def informations_data(datafr):
@@ -167,13 +230,13 @@ def visualisation_distribution_target(datafr):
     """
 
     target_distribution = datafr.TARGET.value_counts(dropna=False)
-    labels = ["Pas de défaut", "Défaut", "Info non disponible"]
+    labels_inner = ["Pas de défaut", "Défaut", "Info non disponible"]
 
     fig = go.Figure(
         data=[
             go.Pie(
                 values=target_distribution,
-                labels=labels,
+                labels=labels_inner,
                 textinfo="label+percent+value",
             )
         ],
@@ -234,7 +297,7 @@ def visualisation_univar(datafr):
         st.image(buf3)
 
 
-def interpretation_global(sample_nb):
+def interpretation_global(sample_nb: int):
     """
 
 
@@ -265,7 +328,7 @@ def interpretation_global(sample_nb):
         fpr_train_gbt,
         tpr_train_gbt,
         color="blue",
-        label="AUC_globale = %0.2f" % auc_train_model,
+        label= f"ROC curve (area = {auc_train_model:0.2f})",
     )
     plt.plot(np.arange(0, 1.1, 0.1), np.arange(0, 1.1, 0.1), color="red")
     plt.legend(loc="lower right")
@@ -280,12 +343,12 @@ def interpretation_global(sample_nb):
 
     st.write("Matrice de confusion simple pour les données disponibles : ")
 
-    tn, fp, fn, tp = confusion_matrix(true_y, predictions).ravel()
+    true_neg, false_pos, false_neg, true_pos = confusion_matrix(true_y, predictions).ravel()
     st.write("positif : client fait défaut")
     st.write("négatif : client ne fait pas défaut")
     st.write(
         "vrai negatif : ",
-        tn,
+        true_neg,
         ", faux positif : ",
         fp,
         ", faux negatif : ",
@@ -321,7 +384,7 @@ def interpretation_global(sample_nb):
         'Proportion de prédiction correcte parmis tout ce que le modèle prédit \
                     comme "bon clients" (vrais négatifs détéctés / tous \
                     vrais négatifs) :',
-        tn / (tn + fp),
+        true_neg / ( true_neg + fp),
     )
 
     st.write("-------------------------------------------------------")
@@ -334,7 +397,7 @@ def interpretation_global(sample_nb):
                     de crédit des clients:"
     )
     fig1 = plt.figure()
-    sum_plot = shap.summary_plot(shap_values, pred_data)
+    # sum_plot = shap.summary_plot(shap_values, pred_data)
     st.pyplot(fig1)
 
     # plot 2
@@ -351,9 +414,9 @@ def interpretation_global(sample_nb):
     sub_sample = pred_data.sample(n=sample_nb)
     shap_values_sub = model_explainer.shap_values(sub_sample)
     fig4 = plt.figure()
-    dec_plot_sample = shap.decision_plot(
-        exp_vals.tolist(), shap_values_sub, features=pred_data, highlight=[1]
-    )
+    # dec_plot_sample = shap.decision_plot(
+    # exp_vals.tolist(), shap_values_sub, features=pred_data, highlight=[1]
+    # )
     st.pyplot(fig4)
 
     # plot 4
@@ -362,13 +425,13 @@ def interpretation_global(sample_nb):
                     le crédit aux clients du sous ensemble :"
     )
 
-    for i, j in enumerate(shap_values_sub):
+    for i in shap_values_sub:
         st.write(
             "-------------------------------------------------------------------------"
         )
         st.write("client aléatoire " + str(i + 1))
         fig = plt.figure()
-        B_plot = shap.bar_plot(j, pred_data)
+        # B_plot = shap.bar_plot(j, pred_data)
         st.pyplot(fig)
 
 
@@ -387,18 +450,18 @@ def interpretation_client(id_input):
 
     """
 
-    data = df[df["ID"] == int(id_input)]
+    data_inner = df[df["ID"] == int(id_input)]
 
     st.write("--------------------------------------------")
     st.write("caractéristiques du client sélectionné :")
 
-    id_target_data = data[["ID", "TARGET"]]
+    id_target_data = data_inner[["ID", "TARGET"]]
     st.dataframe(id_target_data)
 
-    individual_data = data.drop(["TARGET", "ID"], axis=1)
+    individual_data = data_inner.drop(["TARGET", "ID"], axis=1)
     st.dataframe(individual_data)
 
-    shap_values = model_explainer.shap_values(individual_data)
+    shap_values_inner = model_explainer.shap_values(individual_data)
 
     # choix variable:
     st.write("Valeurs des variables pour le client :")
@@ -420,19 +483,19 @@ def interpretation_client(id_input):
     st.write("Contribution des variables principales à la prédiction pour ce client:")
 
     fig2 = plt.figure()
-    dec_plot = shap.decision_plot(exp_vals.tolist(), shap_values, features=pred_data)
+    # dec_plot = shap.decision_plot(exp_vals.tolist(), shap_values, features=pred_data)
     st.pyplot(fig2)
 
     st.write("----------------------------------------------")
     st.write(
         "Contribution des variables les plus imprtantes dans le classement du client :"
     )
-    fig = plt.figure()
+    # fig = plt.figure()
     # Insert first SHAP plot here
-    F_plot = shap.force_plot(
-        model_explainer.expected_value, shap_values, individual_data
+    f_plot = shap.force_plot(
+        model_explainer.expected_value, shap_values_inner, individual_data
     )
-    st_shap(F_plot, 150)
+    st_shap(f_plot, 150)
     # st.pyplot(fig)
 
     st.write("----------------------------------------------")
@@ -441,28 +504,28 @@ def interpretation_client(id_input):
     )
 
     fig3 = plt.figure()
-    B_plot = shap.bar_plot(shap_values[0], pred_data)
+    # B_plot = shap.bar_plot(shap_values[0], pred_data)
     st.pyplot(fig3)
 
 
-def display_filtered_client_visualisation(df: pd.DataFrame) -> pd.DataFrame:
+def display_filtered_client_visualisation(dataframe: pd.DataFrame) -> pd.DataFrame:
     """
     Fonction qui affiche les données filtrées par l'utilisateur
     Parameters
     ----------
-    df : pd.dataFrame
+    dataframe : pd.dataFrame
     données clients filtrées selon les critères choisis par l'utilisateur
     """
-    Gender = list(df["CODE_GENDER"].unique())
+    gender = list(dataframe["CODE_GENDER"].unique())
 
-    marit_status = list(df["NAME_FAMILY_STATUS_Married"].unique())
+    marit_status = list(dataframe["NAME_FAMILY_STATUS_Married"].unique())
 
-    amount = df["AMT_CREDIT"]
+    amount = dataframe["AMT_CREDIT"]
 
     st.markdown("Filtres disponibles pour les données :")
 
     gender_choice = st.multiselect(
-        "sexe : F = " + str(1) + " ; M = " + str(0), Gender, Gender
+        "sexe : F = " + str(1) + " ; M = " + str(0), gender, gender
     )
 
     marital_choice = st.multiselect(
@@ -477,12 +540,14 @@ def display_filtered_client_visualisation(df: pd.DataFrame) -> pd.DataFrame:
         1000.0,
     )
 
-    mask_gender = df["CODE_GENDER"].isin(gender_choice)
-    mask_marital = df["NAME_FAMILY_STATUS_Married"].isin(marital_choice)
+    mask_gender = dataframe["CODE_GENDER"].isin(gender_choice)
+    mask_marital = dataframe["NAME_FAMILY_STATUS_Married"].isin(marital_choice)
 
     # get the parties with a number of members in the range of nb_mbrs
-    # TODO: check the type error here: between is not a method of Series[float]
-    mask_amount_credit = df["AMT_CREDIT"].between(amount_credit[0], amount_credit[1])  # type: ignore
+    # HERE: mypy type error "between is not a method of Series[float]" 
+    mask_amount_credit = dataframe["AMT_CREDIT"].between(
+        amount_credit[0], amount_credit[1]
+    )  # type: ignore
 
     print(
         "mask_amount_credit : ", mask_amount_credit, "type : ", type(mask_amount_credit)
@@ -490,23 +555,23 @@ def display_filtered_client_visualisation(df: pd.DataFrame) -> pd.DataFrame:
     print(type(mask_marital))
     print(type(mask_gender))
 
-    df_filtered = df[mask_gender & mask_marital & mask_amount_credit]
+    df_filtered = dataframe[mask_gender & mask_marital & mask_amount_credit]
 
     st.write("----------------------------------------")
     st.write("tableau de données filtrées : ")
 
     st.write("Description des variables :")
 
-    Colonnes = list(df_filtered.columns)
+    colonnes = list(df_filtered.columns)
 
-    Col_choice = st.multiselect(
+    col_choice = st.multiselect(
         "variables à observer dans les données \
             filtrées :",
-        Colonnes,
+        colonnes,
         default=("ID", "TARGET"),
     )
 
-    st.dataframe(df_filtered[Col_choice])
+    st.dataframe(df_filtered[col_choice])
 
     return df_filtered
 
@@ -544,23 +609,26 @@ def display_homepage() -> None:
     st.markdown("par Adnene Guessoum")
 
 
-def display_about_clients(df: pd.DataFrame) -> None:
+def display_about_clients(dataframe: pd.DataFrame) -> None:
+    '''
+    Fonction qui affiche la pages des informations sur les données clients
+    '''
     st.title("Analyse exploratoire des données clients:")
 
     st.write("--------------------------------------------------")
     st.title("Observer les données non-filtrées :")
 
-    informations_data(df)
-    visualisation_distribution_target(df)
+    informations_data(dataframe)
+    visualisation_distribution_target(dataframe)
 
     agree = st.checkbox("Observer quelques graphiques disponibles ?")
     if agree:
-        visualisation_univar(df)
+        visualisation_univar(dataframe)
 
     st.write("--------------------------------------------------")
     st.title("Observer les données filtrées :")
 
-    df_choice = display_filtered_client_visualisation(df)
+    df_choice = display_filtered_client_visualisation(dataframe)
 
     informations_data(df_choice)
     visualisation_distribution_target(df_choice)
@@ -571,6 +639,9 @@ def display_about_clients(df: pd.DataFrame) -> None:
 
 
 def display_about_model() -> None:
+    '''
+    Fonction qui affiche la page des informations sur le modèle
+    '''
     st.title("Comprendre le modèle de score-crédit:")
     st.markdown("Informations sur le modèle choisie:")
 
@@ -588,6 +659,9 @@ def display_about_model() -> None:
 
 
 def display_predict_page() -> None:
+    '''
+    Fonction qui affiche la page de prédiction de capacité du client à rembourser
+    '''
     st.title("Prédire et expliquer le risque de défaut d'un client:")
     st.markdown("Analyse des résultats de prédiction d'offre de crédit:")
 
@@ -606,18 +680,17 @@ def display_predict_page() -> None:
                     été renseigné. Pour rappel les champs à renseigner sont:"
         )
 
-        st.write(df.columns)
+        st.write(dataframe.columns)
 
     # identifiant correct:
     elif (
         int(id_input) in liste_id
     ):  # quand un identifiant correct a été saisi on appelle l'API
-
-        API_url = "https://api-flask-scoring-credit.herokuapp.com/" + str(int(id_input))
+        api_url = "https://api-flask-scoring-credit.herokuapp.com/" + str(int(id_input))
 
         with st.spinner("Chargement du score du client..."):
             # Appel de l'API :
-            call_api(int(id_input), API_url, df)
+            call_api(int(id_input), api_url, dataframe)
 
         with st.spinner("Chargement des détails de la prédiction..."):
             interpretation_client(id_input)

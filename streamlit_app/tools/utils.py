@@ -4,17 +4,14 @@
 """
 import streamlit as st
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt  # type: ignore
-import seaborn as sns  # type: ignore
-import plotly.graph_objects as go  # type: ignore
-import json
-from urllib.request import urlopen
 
 
 @st.cache_data  # mise en cache de la fonction pour exécution unique
-def load_data(PATH):
-    data = pd.read_csv(PATH)
+def load_data(path):
+    """
+    Fonction de chargement des données
+    """
+    data = pd.read_csv(path)
     return data
 
 
@@ -23,17 +20,18 @@ def cleaning(data):
     sert à assurer que les ID et Targets
     sont les deux dernières colonnes
     """
-    ID = data["ID"]
+    identifiant = data["ID"]
     target = data["TARGET"]
 
-    df = data.drop(["TARGET", "ID"], axis=1)
+    clean_df = data.drop(["TARGET", "ID"], axis=1)
 
-    df["ID"] = ID
-    df["TARGET"] = target
+    clean_df["ID"] = identifiant
+    clean_df["TARGET"] = target
 
-    return df
+    return clean_df
 
 
+''' POSSIBLY UNNECESSARY FOR STREAMLIT APP (SETUP TESTS BEFORE REMOVING)
 def nan_df_create(data):
 
     """
@@ -236,7 +234,6 @@ class correlation_matrix:
 
         return top_corr_target_df.iloc[:target_top_columns]
 
-''' POSSIBLY UNNECESSARY FOR STREAMLIT APP (SETUP TESTS BEFORE REMOVING)
 def plot_phik_matrix(
     data,
     categorical_columns,
@@ -696,7 +693,6 @@ def plot_continuous_variables(
     plt.show()
 
 
-'''
 def describe_data(path_description):
     """
     This function creates a dictionary of the data description \
@@ -876,3 +872,5 @@ def diplay_filtered_client_visualisation(df_filtered):
 
     informations_data(df_filtered)
     visualisation_distribution_target(df_filtered)
+
+'''

@@ -1,3 +1,14 @@
+"""
+    main.py est le fichier principal de l'application. il appelle les fonctions
+    d'affichages des différentes pages de l'app streamlit et définis la barre de
+    navigation latérale.
+
+    Pour lancer l'app, il suffit de lancer la commande suivante dans le terminal :
+    streamlit run main.py
+
+    ou dans ce cas:
+    poetry run streamlit run main.py
+"""
 # Import
 import random
 import streamlit as st
@@ -15,13 +26,13 @@ from tools import (
 )
 
 # load small dataset:
-path_df = "output_data/selected_feature_dataset"
-df = pd.read_csv(path_df)
+PATH_DF = "output_data/selected_feature_dataset"
+df = pd.read_csv(PATH_DF)
 # df = df.drop(["Unnamed: 0"], axis = 1)
 
 # Load variable descriptions:
-path_desc = "output_data/desc_features.csv"
-variables_description = load_data(path_desc)
+PATH_DESC = "output_data/desc_features.csv"
+variables_description = load_data(PATH_DESC)
 
 liste_id = df["ID"].tolist()
 data = cleaning(df)

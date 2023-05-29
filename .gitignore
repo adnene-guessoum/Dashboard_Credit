@@ -1,3 +1,7 @@
+# quickfix
+Makefile
+output.txt
+
 # ignore dataset files
 *.csv
 data/
