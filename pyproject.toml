@@ -19,7 +19,7 @@ plotly = "^5.14.1"
 scikit-learn = "^1.2.2"
 shap = "^0.41.0"
 ipython = "^8.13.2"
-xgboost = "^1.7.5"
+xgboost = "^1.7.3"
 pandas = "^2.0.1"
 
 [tool.poetry.group.dev.dependencies]

@@ -46,15 +46,23 @@ from sklearn.metrics import (
 from sklearn.metrics import fbeta_score, precision_score, recall_score
 from tools.utils import *
 from io import BytesIO
-import pickle
 import joblib
+import xgboost as xgb
 import shap
 
 shap.initjs()
 
-path_df = "output_data/selected_feature_dataset"
+# load small dataset:
+path_df = 'output_data/selected_feature_dataset'
 df = pd.read_csv(path_df)
-# df = df.drop(["Unnamed: 0"], axis=1)
+# df = df.drop(["Unnamed: 0"], axis = 1)
+
+#Load variable descriptions:
+path_desc = 'output_data/desc_features.csv'
+variables_description = load_data(path_desc)
+
+liste_id = df['ID'].tolist()
+data = cleaning(df)
 
 # Load model
 path_model = "output_data/rec28052023_model_final.pickle.dat"
@@ -63,30 +71,24 @@ model = pickle.load(open(path_model, "rb"))
 
 # Load explainer:
 file_path = "output_data/shap_values"
-with open(file_path, "rb") as f:
-    shap_vals = pickle.load(f)
+shap_values = pickle.load(open(file_path, "rb"))
 
-file_path = "output_data/model_explainer"
 # model_explainer = pickle.load(open(file_path,'rb'))
-try:
-    with open(file_path, "rb") as f:
-        model_explainer = pickle.load(f)
-except FileNotFoundError:
-    print(f"File '{file_path}' not found.")
-except Exception as e:
-    print(f"Error loading pickled object: {str(e)}")
+file_path = "output_data/model_explainer_bis"
+model_explainer = pickle.load(open(file_path, "rb"))
 
+# Load expected values:
 file_path = "output_data/expected_values"
-with open(file_path, "rb") as f:
-    exp_vals = pickle.load(f)
+exp_vals = pickle.load(open(file_path, "rb"))
 
-
+# Split data
 train_df = df[df["TARGET"].notnull()]
 test_df = df[df["TARGET"].isnull()]
 pred_data = df.drop(["TARGET", "ID"], axis=1)
 true_y = train_df["TARGET"]
 labels = train_df["ID"]
 
+# Predictions
 predictions = model.predict(train_df.drop(["TARGET", "ID"], axis=1))
 probas_predictions = model.predict_proba(train_df.drop(["TARGET", "ID"], axis=1))[:, 1]
 
@@ -215,7 +217,7 @@ def visualisation_univar(datafr):
         fig2.savefig(buf2, format="png")
         st.image(buf2)
 
-    st.markdown("Les distributions des données filtrées par variables sélectonnées :")
+    st.markdown("Les distributions de quelques variables numériques :")
     for j in df_num.columns:
         # fig = plt.figure(figsize = (5,4))
         # sns.displot(df_num[j], color = 'black', rug = True)
@@ -225,7 +227,7 @@ def visualisation_univar(datafr):
         # st.image(buf)
 
         fig3 = plt.figure(figsize=(5, 4))
-        sns.boxplot(df_num[j])
+        sns.boxplot(df_num[j]).set_title(j)
         # st.pyplot(fig3)
         buf3 = BytesIO()
         fig3.savefig(buf3, format="png")
@@ -332,13 +334,13 @@ def interpretation_global(sample_nb):
                     de crédit des clients:"
                     )
     fig1 = plt.figure()
-    sum_plot = shap.summary_plot(shap_vals, pred_data)
+    sum_plot = shap.summary_plot(shap_values, pred_data)
     st.pyplot(fig1)
 
     # plot 2
     st.write("Visualisation sous forme de bar plot:")
     fig2 = plt.figure()
-    shap.summary_plot(shap_vals, pred_data, plot_type="bar")
+    shap.summary_plot(shap_values, pred_data, plot_type="bar")
     st.pyplot(fig2)
 
     # plot 3
@@ -493,7 +495,7 @@ def display_filtered_client_visualisation(df: pd.DataFrame) -> None:
 
     st.dataframe(df_filtered[Col_choice])
 
-    return df_filtered[Col_choice]
+    return df_filtered
 
 def display_homepage() -> None:
     """
