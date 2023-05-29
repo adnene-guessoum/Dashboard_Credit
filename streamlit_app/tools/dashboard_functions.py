@@ -29,21 +29,17 @@ liste des fonctions:
     - display_predict_page
 
 """
-
+import pickle
+import json
+from urllib.request import urlopen
+from io import BytesIO
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go  # type: ignore
 import seaborn as sns  # type: ignore
-import pickle
-import json
-from urllib.request import urlopen
-from io import BytesIO
-
 import streamlit as st
 import streamlit.components.v1 as components
-
-# metrics
 from sklearn.metrics import (  # type: ignore
     roc_auc_score,
     roc_curve,
@@ -51,21 +47,22 @@ from sklearn.metrics import (  # type: ignore
 )
 from sklearn.metrics import fbeta_score, precision_score, recall_score
 import shap  # type: ignore
+from .utils import load_data, cleaning
 
 shap.initjs()
 
-from .utils import load_data, cleaning
+
 # load dataset:
 PATH_DF = "output_data/selected_feature_dataset"
-df = pd.read_csv(PATH_DF)
+data = pd.read_csv(PATH_DF)
 # df = df.drop(["Unnamed: 0"], axis = 1)
 
 # Load variable descriptions:
 PATH_DESC = "output_data/desc_features.csv"
 variables_description = load_data(PATH_DESC)
 
-liste_id = df["ID"].tolist()
-data = cleaning(df)
+liste_id = data["ID"].tolist()
+data = cleaning(data)
 
 # Load model
 PATH_MODEL = "output_data/rec28052023_model_final.pickle.dat"
@@ -89,9 +86,9 @@ with open(FILE_PATH, "rb") as f:
     exp_vals = pickle.load(f)
 
 # Split data
-train_df = df[df["TARGET"].notnull()]
-test_df = df[df["TARGET"].isnull()]
-pred_data = df.drop(["TARGET", "ID"], axis=1)
+train_df = data[data["TARGET"].notnull()]
+test_df = data[data["TARGET"].isnull()]
+pred_data = data.drop(["TARGET", "ID"], axis=1)
 true_y = train_df["TARGET"]
 labels = train_df["ID"]
 
@@ -159,9 +156,9 @@ def call_api(input_data: int, api_url: str, dataframe: pd.DataFrame):
     """
 
     with st.spinner("Appel de l'API en cours..."):
-        json_url = urlopen(api_url)
+        with urlopen(api_url) as json_url:
+            api_data = json.loads(json_url.read())
 
-    api_data = json.loads(json_url.read())
     classe_predite = api_data["prediction"]
     if classe_predite == 1:
         etat = "client à risque"
@@ -297,10 +294,9 @@ def visualisation_univar(datafr):
         st.image(buf3)
 
 
+# pylint: disable=too-many-locals
 def interpretation_global(sample_nb: int):
     """
-
-
     Parameters
     ----------
     sample_nb : int
@@ -328,7 +324,7 @@ def interpretation_global(sample_nb: int):
         fpr_train_gbt,
         tpr_train_gbt,
         color="blue",
-        label= f"ROC curve (area = {auc_train_model:0.2f})",
+        label=f"ROC curve (area = {auc_train_model:0.2f})",
     )
     plt.plot(np.arange(0, 1.1, 0.1), np.arange(0, 1.1, 0.1), color="red")
     plt.legend(loc="lower right")
@@ -343,22 +339,27 @@ def interpretation_global(sample_nb: int):
 
     st.write("Matrice de confusion simple pour les données disponibles : ")
 
-    true_neg, false_pos, false_neg, true_pos = confusion_matrix(true_y, predictions).ravel()
+    true_neg, false_pos, false_neg, true_pos = confusion_matrix(
+        true_y, predictions
+    ).ravel()
     st.write("positif : client fait défaut")
     st.write("négatif : client ne fait pas défaut")
     st.write(
         "vrai negatif : ",
         true_neg,
         ", faux positif : ",
-        fp,
+        false_pos,
         ", faux negatif : ",
-        fn,
+        false_neg,
         ", vrai positif : ",
-        tp,
+        true_pos,
     )
     st.write("--------------------------------------------------")
 
-    st.write("score crédit global des clients actuels : ", credit_metric(fn, fp))
+    st.write(
+        "score crédit global des clients actuels : ",
+        credit_metric(false_neg, false_pos),
+    )
 
     fbs_gbt = fbeta_score(true_y, predictions, beta=2)
 
@@ -384,7 +385,7 @@ def interpretation_global(sample_nb: int):
         'Proportion de prédiction correcte parmis tout ce que le modèle prédit \
                     comme "bon clients" (vrais négatifs détéctés / tous \
                     vrais négatifs) :',
-        true_neg / ( true_neg + fp),
+        true_neg / (true_neg + false_pos),
     )
 
     st.write("-------------------------------------------------------")
@@ -435,6 +436,9 @@ def interpretation_global(sample_nb: int):
         st.pyplot(fig)
 
 
+# pylint: enable=too-many-locals
+
+
 def interpretation_client(id_input):
     """
     Fonction qui interpréte le score d'un client en utilisant SHAP'
@@ -450,7 +454,7 @@ def interpretation_client(id_input):
 
     """
 
-    data_inner = df[df["ID"] == int(id_input)]
+    data_inner = data[data["ID"] == int(id_input)]
 
     st.write("--------------------------------------------")
     st.write("caractéristiques du client sélectionné :")
@@ -544,7 +548,7 @@ def display_filtered_client_visualisation(dataframe: pd.DataFrame) -> pd.DataFra
     mask_marital = dataframe["NAME_FAMILY_STATUS_Married"].isin(marital_choice)
 
     # get the parties with a number of members in the range of nb_mbrs
-    # HERE: mypy type error "between is not a method of Series[float]" 
+    # HERE: mypy type error "between is not a method of Series[float]"
     mask_amount_credit = dataframe["AMT_CREDIT"].between(
         amount_credit[0], amount_credit[1]
     )  # type: ignore
@@ -610,9 +614,9 @@ def display_homepage() -> None:
 
 
 def display_about_clients(dataframe: pd.DataFrame) -> None:
-    '''
+    """
     Fonction qui affiche la pages des informations sur les données clients
-    '''
+    """
     st.title("Analyse exploratoire des données clients:")
 
     st.write("--------------------------------------------------")
@@ -639,9 +643,9 @@ def display_about_clients(dataframe: pd.DataFrame) -> None:
 
 
 def display_about_model() -> None:
-    '''
+    """
     Fonction qui affiche la page des informations sur le modèle
-    '''
+    """
     st.title("Comprendre le modèle de score-crédit:")
     st.markdown("Informations sur le modèle choisie:")
 
@@ -658,10 +662,10 @@ def display_about_model() -> None:
         st.write("Veuillez saisir un nombre (raisonnable).")
 
 
-def display_predict_page() -> None:
-    '''
+def display_predict_page(dataframe: pd.DataFrame) -> None:
+    """
     Fonction qui affiche la page de prédiction de capacité du client à rembourser
-    '''
+    """
     st.title("Prédire et expliquer le risque de défaut d'un client:")
     st.markdown("Analyse des résultats de prédiction d'offre de crédit:")
 
@@ -680,7 +684,7 @@ def display_predict_page() -> None:
                     été renseigné. Pour rappel les champs à renseigner sont:"
         )
 
-        st.write(dataframe.columns)
+        st.write(data.columns)
 
     # identifiant correct:
     elif (

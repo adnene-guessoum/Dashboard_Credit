@@ -82,10 +82,10 @@ with st.sidebar:
 if selection == "Home":
     display_homepage()
 elif selection == "Comprendre nos clients":
-    display_about_clients(df)
+    display_about_clients(data)
 elif selection == "Comprendre le modèle":
     display_about_model()
 elif selection == "Prédire et expliquer":
-    display_predict_page()
+    display_predict_page(data)
 else:
     raise ValueError("The selection is not valid.")
