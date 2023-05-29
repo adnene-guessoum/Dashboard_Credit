@@ -1,19 +1,19 @@
 # Import
+import random
 import streamlit as st
 import pandas as pd
 from streamlit_option_menu import option_menu
 
 # Local import:
-from tools import display_homepage, display_about_clients, display_about_model, display_predict_page
-from tools import load_data, cleaning
+from tools import display_homepage, display_about_clients, display_about_model, display_predict_page, load_data, cleaning
 
 # load small dataset:
-path_df = 'client/saved_model_data/restricted_dataset'
+path_df = 'output_data/selected_feature_dataset'
 df = pd.read_csv(path_df)
-df = df.drop(["Unnamed: 0"], axis = 1)
+# df = df.drop(["Unnamed: 0"], axis = 1)
 
 #Load variable descriptions:
-path_desc = 'client/saved_model_data/desc_features.csv'
+path_desc = 'output_data/desc_features.csv'
 variables_description = load_data(path_desc)
 
 liste_id = df['ID'].tolist()
@@ -40,7 +40,8 @@ with st.sidebar:
 
     st.sidebar.markdown('---')
     st.write('Description des variables :')
-    dict_desc = dict(zip(variables_description.Feature, variables_description.description))
+    dict_desc = dict(zip(variables_description.Row, variables_description.Description))
+    dict_desc['ID'] = dict_desc.pop('SK_ID_CURR')
 
     option = st.selectbox(
             'Veuillez indiquez la variable à expliquer :',
@@ -48,8 +49,8 @@ with st.sidebar:
 
     st.write(dict_desc[option])
 
-    st.write("liste des id clients disponibles pour la version déployée de l'app (4000 clients sélectionnés au hasard) :")
-    st.write(liste_id)
+    st.write("quelques id clients disponibles si vous voulez tester l'app :")
+    st.write(random.sample(liste_id, 50))
 
 # Pages
 if selection == "Home":
