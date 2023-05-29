@@ -17,10 +17,7 @@ from streamlit_option_menu import option_menu  # type: ignore
 
 # Local import:
 from tools import (
-    display_homepage,
-    display_about_clients,
-    display_about_model,
-    display_predict_page,
+    navigation,
     load_data,
     cleaning,
 )
@@ -78,14 +75,4 @@ with st.sidebar:
     st.write("quelques id clients disponibles si vous voulez tester l'app :")
     st.write(random.sample(liste_id, 50))
 
-# Pages
-if selection == "Home":
-    display_homepage()
-elif selection == "Comprendre nos clients":
-    display_about_clients(data)
-elif selection == "Comprendre le modèle":
-    display_about_model()
-elif selection == "Prédire et expliquer":
-    display_predict_page(data)
-else:
-    raise ValueError("The selection is not valid.")
+    navigation(data, selection)

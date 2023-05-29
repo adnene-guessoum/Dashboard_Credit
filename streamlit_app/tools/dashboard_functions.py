@@ -23,6 +23,7 @@ liste des fonctions:
 
     - display_filtered_client_visualisation
 
+    - navigation
     - display_homepage
     - display_about_clients
     - display_about_model
@@ -578,6 +579,23 @@ def display_filtered_client_visualisation(dataframe: pd.DataFrame) -> pd.DataFra
     st.dataframe(df_filtered[col_choice])
 
     return df_filtered
+
+
+# Pages
+def navigation(dataframe, selection):
+    """
+    fonction qui permet de naviguer entre les différentes pages de l'app
+    """
+    if selection == "Home":
+        display_homepage()
+    elif selection == "Comprendre nos clients":
+        display_about_clients(dataframe)
+    elif selection == "Comprendre le modèle":
+        display_about_model()
+    elif selection == "Prédire et expliquer":
+        display_predict_page(dataframe)
+    else:
+        raise ValueError("The selection is not valid.")
 
 
 def display_homepage() -> None:

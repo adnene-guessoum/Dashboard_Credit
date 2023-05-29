@@ -2,7 +2,7 @@
 fichier principal de l'app flask (à lancer pour lancer l'app)
 définit les routes et appelle les fonctions associées
 
-api qui renvoie une prédiction de défaut de crédit pour un client de la 
+api qui renvoie une prédiction de défaut de crédit pour un client de la
 base de données (ID) et en fonction de ses caractéristiques
 """
 import pickle
@@ -13,7 +13,8 @@ import pandas as pd
 
 # Load model
 PATH_MODEL = "model/model_final.pickle.dat"
-model = pickle.load(open(PATH_MODEL, "rb"))
+with open(PATH_MODEL, "rb") as file:
+    model = pickle.load(file)
 
 # Load Dataframe
 # (temp restricted dataset en attendant psql database)
