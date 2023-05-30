@@ -21,7 +21,8 @@ Le code est disponible dans le dossier Flask_api.
 # Description du projet:
 
 ## Contexte:
-	scoring de demande de crédit avec déploiement du modèle. déterminer si un client sera en mesure de rembourser un crédit et déployer un dashboard à l'usage de l'entreprise.
+
+Scoring de demande de crédit avec déploiement du modèle. Déterminer si un client sera en mesure de rembourser un crédit et déployer un dashboard à l'usage de l'entreprise. Le modèle est interprété avec Shap et les résultats sont présentés dans le dashboard.
 
 ## Outils:
 
