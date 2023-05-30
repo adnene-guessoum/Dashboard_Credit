@@ -36,6 +36,7 @@ mkdocs-coverage = "^0.2.5"
 git-changelog = "^0.6.0"
 data-science-types = "^0.2.23"
 types-requests = "^2.31.0.1"
+pytest-mock = "^3.10.0"
 
 [build-system]
 requires = ["poetry-core"]

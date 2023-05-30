@@ -1,5 +1,5 @@
 """
-    tests pour main.py
+    tests pour navigation de app streamlit
 """
 import pytest
 from tools.dashboard_functions import navigation

@@ -19,6 +19,7 @@ tasks:
     cmds:
       - >
         poetry run pytest
+        streamlit_app/
         --cov=streamlit_app/
         --cov-report=html
         --disable-warnings
@@ -36,6 +37,7 @@ tasks:
     cmds:
       - >
         poetry run pytest
+        flask_api/
         --cov=flask_api/
         --cov-report=html
         --disable-warnings
