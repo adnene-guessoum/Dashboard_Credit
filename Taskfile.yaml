@@ -21,6 +21,7 @@ tasks:
         poetry run pytest
         --cov=streamlit_app/
         --cov-report=html
+        --disable-warnings
 
   lint-flask:
     desc: Lints the code and report issues.
@@ -37,6 +38,7 @@ tasks:
         poetry run pytest
         --cov=flask_api/
         --cov-report=html
+        --disable-warnings
 
   integration:
     desc: run entire ci
