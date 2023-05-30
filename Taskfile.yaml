@@ -6,31 +6,46 @@ tasks:
     cmds:
       - poetry install --no-root
 
-  lint:
+  lint-streamlit:
     desc: Lints the code and report issues.
     cmds:
-      #- poetry run mypy --install-types client/ # --ignore-missing-imports
-      - poetry run black client/
-      - poetry run flake8 client/ --ignore=F405,F403 --show-source --statistics --count
-      - poetry run pylint client/
+      #- poetry run mypy --install-types streamlit_app/ # --ignore-missing-imports
+      - poetry run black streamlit_app/
+      - poetry run flake8 streamlit_app/ --ignore=F405,F403,W503 --show-source --statistics --count
+      - poetry run pylint --disable=W0105 streamlit_app/
 
-  test:
+  test-streamlit:
     desc: Runs test on code
     cmds:
       - >
         poetry run pytest
-        --cov=client/
+        streamlit_app/
+        --cov=streamlit_app/
         --cov-report=html
+        --disable-warnings
 
-  generate-changelog:
-    desc: Generates the changelog
+  lint-flask:
+    desc: Lints the code and report issues.
     cmds:
-      - poetry run git-changelog --output CHANGELOG.md
+      #- poetry run mypy --install-types flask_api/ # --ignore-missing-imports
+      - poetry run black flask_api/
+      - poetry run flake8 flask_api/ --ignore=F405,F403,W503 --show-source --statistics --count
+      - poetry run pylint flask_api/
 
-  docs-serve:
-    desc: Serve the documentation locally
-    deps:
-      - test
-      - generate-changelog
+  test-flask:
+    desc: Runs test on code
     cmds:
-      - poetry run mkdocs serve
+      - >
+        poetry run pytest
+        flask_api/
+        --cov=flask_api/
+        --cov-report=html
+        --disable-warnings
+
+  integration:
+    desc: run entire ci
+    cmds:
+      - task lint-streamlit
+      - task lint-flask
+      - task test-streamlit
+      - task test-flask

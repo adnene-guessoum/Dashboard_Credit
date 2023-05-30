@@ -1,3 +1,10 @@
+# ignoring tests while dataset issue not settled
+.github/workflows/tests.yml
+
+# quickfix
+Makefile
+output.txt
+
 # ignore dataset files
 *.csv
 data/

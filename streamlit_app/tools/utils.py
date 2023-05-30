@@ -1,30 +1,37 @@
 # -*- coding: utf-8 -*-
-'''
+"""
     General functions for data loading, cleaning and general vizualisation.
-'''
+"""
 import streamlit as st
 import pandas as pd
 
-@st.cache_data #mise en cache de la fonction pour exécution unique
-def load_data(PATH):
-    data=pd.read_csv(PATH)
+
+@st.cache_data  # mise en cache de la fonction pour exécution unique
+def load_data(path):
+    """
+    Fonction de chargement des données
+    """
+    data = pd.read_csv(path)
     return data
 
+
 def cleaning(data):
-    '''
+    """
     sert à assurer que les ID et Targets
-    sont les deux dernières colonnes    
-    '''
-    ID = data["ID"]
+    sont les deux dernières colonnes
+    """
+    identifiant = data["ID"]
     target = data["TARGET"]
 
-    df = data.drop(["TARGET", "ID"], axis=1)
+    clean_df = data.drop(["TARGET", "ID"], axis=1)
 
-    df["ID"] = ID
-    df["TARGET"] = target
+    clean_df["ID"] = identifiant
+    clean_df["TARGET"] = target
 
-    return df
+    return clean_df
 
+
+''' POSSIBLY UNNECESSARY FOR STREAMLIT APP (SETUP TESTS BEFORE REMOVING)
 def nan_df_create(data):
 
     """
@@ -41,8 +48,8 @@ def nan_df_create(data):
 
     nan_percentages = data.isna().sum() * 100 / len(data)
     df = pd.DataFrame(
-            {"column": nan_percentages.index, "percent": nan_percentages.values}
-            )
+        {"column": nan_percentages.index, "percent": nan_percentages.values}
+    )
 
     # sorting the dataframe by decreasing order of percentage of NaN values
     df.sort_values(by="percent", ascending=False, inplace=True)
@@ -51,13 +58,13 @@ def nan_df_create(data):
 
 
 def plot_nan_percent(
-        df_nan,
-        title_name,
-        tight_layout=True,
-        figsize=(20, 8),
-        grid=False,
-        rotation=90,
-        ):
+    df_nan,
+    title_name,
+    tight_layout=True,
+    figsize=(20, 8),
+    grid=False,
+    rotation=90,
+):
 
     """
     Function to plot Bar Plots of NaN percentages for each Column with missing values
@@ -81,11 +88,12 @@ def plot_nan_percent(
     # checking if there is any column with NaNs or not.
     if df_nan.percent.sum() != 0:
         print(
-                f"Number of columns having NaN values:\
+            f"Number of columns having NaN values:\
                         {df_nan[df_nan['percent'] != 0].shape[0]} columns"
-                        )
+        )
 
-        # plotting the Bar-Plot for NaN percentages (only for columns with Non-Zero percentage of NaN values)
+        # plotting the Bar-Plot for NaN percentages (only for columns
+        # with Non-Zero percentage of NaN values)
         plt.figure(figsize=figsize, tight_layout=tight_layout)
         sns.barplot(x="column", y="percent", data=df_nan[df_nan["percent"] > 0])
         plt.xticks(rotation=rotation)
@@ -110,16 +118,16 @@ class correlation_matrix:
     """
 
     def __init__(
-            self,
-            data,
-            columns_to_drop,
-            figsize=(25, 23),
-            mask_upper=True,
-            tight_layout=True,
-            linewidth=0.1,
-            fontsize=10,
-            cmap="Blues",
-            ):
+        self,
+        data,
+        columns_to_drop,
+        figsize=(25, 23),
+        mask_upper=True,
+        tight_layout=True,
+        linewidth=0.1,
+        fontsize=10,
+        cmap="Blues",
+    ):
         """
         Function to initialize the class members.
 
@@ -170,8 +178,8 @@ class correlation_matrix:
         print("-" * 100)
         # building the correlation dataframe
         self.corr_data = self.data.drop(
-                self.columns_to_drop + ["TARGET"], axis=1
-                ).corr()
+            self.columns_to_drop + ["TARGET"], axis=1
+        ).corr()
 
         if self.mask_upper:
             # masking the heatmap to show only lower triangle. This is to save the RAM.
@@ -182,12 +190,12 @@ class correlation_matrix:
 
         plt.figure(figsize=self.figsize, tight_layout=self.tight_layout)
         sns.heatmap(
-                self.corr_data,
-                annot=False,
-                mask=mask_array,
-                linewidth=self.linewidth,
-                cmap=self.cmap,
-                )
+            self.corr_data,
+            annot=False,
+            mask=mask_array,
+            linewidth=self.linewidth,
+            cmap=self.cmap,
+        )
         plt.xticks(rotation=90, fontsize=self.fontsize)
         plt.yticks(fontsize=self.fontsize)
         plt.title("Correlation Heatmap for Numerical features")
@@ -211,34 +219,33 @@ class correlation_matrix:
         # calculating the Phik-Correlation with Target
         for index, column in enumerate(self.corr_data.columns):
             phik_target_arr[index] = (
-                    self.data[["TARGET", column]].phik_matrix().iloc[0, 1]
-                    )
+                self.data[["TARGET", column]].phik_matrix().iloc[0, 1]
+            )
         # getting the top correlated columns and their values
         top_corr_target_df = pd.DataFrame(
-                {
-                    "Column Name": self.corr_data.columns,
-                    "Phik-Correlation": phik_target_arr,
-                    }
-                )
+            {
+                "Column Name": self.corr_data.columns,
+                "Phik-Correlation": phik_target_arr,
+            }
+        )
         top_corr_target_df = top_corr_target_df.sort_values(
-                by="Phik-Correlation", ascending=False
-                )
+            by="Phik-Correlation", ascending=False
+        )
 
         return top_corr_target_df.iloc[:target_top_columns]
 
-
 def plot_phik_matrix(
-        data,
-        categorical_columns,
-        figsize=(20, 20),
-        mask_upper=True,
-        tight_layout=True,
-        linewidth=0.1,
-        fontsize=10,
-        cmap="Blues",
-        show_target_top_corr=True,
-        target_top_columns=10,
-        ):
+    data,
+    categorical_columns,
+    figsize=(20, 20),
+    mask_upper=True,
+    tight_layout=True,
+    linewidth=0.1,
+    fontsize=10,
+    cmap="Blues",
+    show_target_top_corr=True,
+    target_top_columns=10,
+):
 
     """
     Function to Phi_k matrix for categorical features
@@ -280,12 +287,12 @@ def plot_phik_matrix(
 
     plt.figure(figsize=figsize, tight_layout=tight_layout)
     sns.heatmap(
-            phik_matrix,
-            annot=False,
-            mask=mask_array,
-            linewidth=linewidth,
-            cmap=cmap,
-            )
+        phik_matrix,
+        annot=False,
+        mask=mask_array,
+        linewidth=linewidth,
+        cmap=cmap,
+    )
     plt.xticks(rotation=90, fontsize=fontsize)
     plt.yticks(rotation=0, fontsize=fontsize)
     plt.title("Phi-K Correlation Heatmap for Categorical Features")
@@ -296,30 +303,29 @@ def plot_phik_matrix(
         # Seeing the top columns with highest correlation with
         # the target variable in application_train
         print(
-                "Categories with highest values of Phi-K Correlation \
+            "Categories with highest values of Phi-K Correlation \
                         value with Target Variable are:"
-                        )
+        )
         phik_df = pd.DataFrame(
-                {
-                    "Column Name": phik_matrix.TARGET.index[1:],
-                    "Phik-Correlation": phik_matrix.TARGET.values[1:],
-                    }
-                )
+            {
+                "Column Name": phik_matrix.TARGET.index[1:],
+                "Phik-Correlation": phik_matrix.TARGET.values[1:],
+            }
+        )
         phik_df = phik_df.sort_values(by="Phik-Correlation", ascending=False)
         display(phik_df.head(target_top_columns))
         print("-" * 100)
 
-
 def plot_categorical_variables_bar(
-        data,
-        column_name,
-        figsize=(18, 6),
-        percentage_display=True,
-        plot_defaulter=True,
-        rotation=0,
-        horizontal_adjust=0,
-        fontsize_percent="xx-small",
-        ):
+    data,
+    column_name,
+    figsize=(18, 6),
+    percentage_display=True,
+    plot_defaulter=True,
+    rotation=0,
+    horizontal_adjust=0,
+    fontsize_percent="xx-small",
+):
 
     """
     Function to plot Categorical Variables Bar Plots
@@ -346,9 +352,9 @@ def plot_categorical_variables_bar(
     """
 
     print(
-            f"Total Number of unique categories of \
+        f"Total Number of unique categories of \
                     {column_name} = {len(data[column_name].unique())}"
-                    )
+    )
 
     plt.figure(figsize=figsize, tight_layout=False)
     sns.set(style="whitegrid", font_scale=1.2)
@@ -362,11 +368,11 @@ def plot_categorical_variables_bar(
         total_datapoints = len(data[column_name].dropna())
         for p in ax.patches:
             ax.text(
-                    p.get_x() + horizontal_adjust,
-                    p.get_height() + 0.005 * total_datapoints,
-                    "{:1.02f}%".format(p.get_height() * 100 / total_datapoints),
-                    fontsize=fontsize_percent,
-                    )
+                p.get_x() + horizontal_adjust,
+                p.get_height() + 0.005 * total_datapoints,
+                "{:1.02f}%".format(p.get_height() * 100 / total_datapoints),
+                fontsize=fontsize_percent,
+            )
 
     plt.xlabel(column_name, labelpad=10)
     plt.title(f"Distribution of {column_name}", pad=20)
@@ -376,28 +382,27 @@ def plot_categorical_variables_bar(
     # plotting distribution of category for Defaulters
     if plot_defaulter:
         percentage_defaulter_per_category = (
-                (
-                    data[column_name][data.TARGET == 1].value_counts()
-                    * 100
-                    / data[column_name].value_counts()
-                    )
-                .dropna()
-                .sort_values(ascending=False)
-                )
+            (
+                data[column_name][data.TARGET == 1].value_counts() * 100 / data[
+                    column_name].value_counts()
+            )
+            .dropna()
+            .sort_values(ascending=False)
+        )
 
         plt.subplot(1, 2, 2)
         sns.barplot(
-                x=percentage_defaulter_per_category.index,
-                y=percentage_defaulter_per_category,
-                palette="Set2",
-                )
+            x=percentage_defaulter_per_category.index,
+            y=percentage_defaulter_per_category,
+            palette="Set2",
+        )
         plt.ylabel("Percentage of Defaulter per category")
         plt.xlabel(column_name, labelpad=10)
         plt.xticks(rotation=rotation)
         plt.title(
-                f"Percentage of Defaulters for each category of {column_name}",
-                pad=20,
-                )
+            f"Percentage of Defaulters for each category of {column_name}",
+            pad=20,
+        )
     plt.show()
 
 
@@ -421,9 +426,9 @@ def plot_categorical_variables_pie(data, column_name, plot_defaulter=True, hole=
         cols = 2
         specs = [[{"type": "domain"}, {"type": "domain"}]]
         titles = [
-                f"Distribution of {column_name} for all Targets",
-                f"Percentage of Defaulters for each category of {column_name}",
-                ]
+            f"Distribution of {column_name} for all Targets",
+            f"Percentage of Defaulters for each category of {column_name}",
+        ]
     else:
         cols = 1
         specs = [[{"type": "domain"}]]
@@ -435,37 +440,37 @@ def plot_categorical_variables_pie(data, column_name, plot_defaulter=True, hole=
     fig = make_subplots(rows=1, cols=cols, specs=specs, subplot_titles=titles)
 
     fig.add_trace(
-            go.Pie(
-                values=values_categorical,
-                labels=labels_categorical,
-                hole=hole,
-                textinfo="label+percent",
-                textposition="inside",
-                ),
-            row=1,
-            col=1,
-            )
+        go.Pie(
+            values=values_categorical,
+            labels=labels_categorical,
+            hole=hole,
+            textinfo="label+percent",
+            textposition="inside",
+        ),
+        row=1,
+        col=1,
+    )
 
     if plot_defaulter:
         percentage_defaulter_per_category = (
-                data[column_name][data.TARGET == 1].value_counts()
-                * 100
-                / data[column_name].value_counts()
-                )
+            data[column_name][data.TARGET == 1].value_counts()
+            * 100
+            / data[column_name].value_counts()
+        )
         percentage_defaulter_per_category.dropna(inplace=True)
         percentage_defaulter_per_category = percentage_defaulter_per_category.round(2)
 
         fig.add_trace(
-                go.Pie(
-                    values=percentage_defaulter_per_category,
-                    labels=percentage_defaulter_per_category.index,
-                    hole=hole,
-                    textinfo="label+value",
-                    hoverinfo="label+value",
-                    ),
-                row=1,
-                col=2,
-                )
+            go.Pie(
+                values=percentage_defaulter_per_category,
+                labels=percentage_defaulter_per_category.index,
+                hole=hole,
+                textinfo="label+value",
+                hoverinfo="label+value",
+            ),
+            row=1,
+            col=2,
+        )
 
     fig.update_layout(title=f"Distribution of {column_name}")
     fig.show()
@@ -489,9 +494,9 @@ def print_unique_categories(data, column_name, show_counts=False):
 
     print("-" * 100)
     print(
-            f"The unique categories of '{column_name}' \
+        f"The unique categories of '{column_name}' \
                     are:\n{data[column_name].unique()}"
-                    )
+    )
     print("-" * 100)
 
     if show_counts:
@@ -517,8 +522,8 @@ def plot_cdf(data, column_name, log_scale=False, figsize=(12, 8)):
 
     percentile_values = data[[column_name]].dropna().sort_values(by=column_name)
     percentile_values["Percentile"] = [
-            ele / (len(percentile_values) - 1) for ele in range(len(percentile_values))
-            ]
+        ele / (len(percentile_values) - 1) for ele in range(len(percentile_values))
+    ]
 
     plt.figure(figsize=figsize)
     if log_scale:
@@ -527,10 +532,10 @@ def plot_cdf(data, column_name, log_scale=False, figsize=(12, 8)):
     else:
         plt.xlabel(column_name)
     plt.plot(
-            percentile_values[column_name],
-            percentile_values["Percentile"],
-            color="red",
-            )
+        percentile_values[column_name],
+        percentile_values["Percentile"],
+        color="red",
+    )
     plt.ylabel("Probability")
     plt.title("CDF of {}".format(column_name))
     plt.show()
@@ -555,21 +560,21 @@ def print_percentiles(data, column_name, percentiles=None):
         percentiles = list(range(0, 80, 25)) + list(range(90, 101, 2))
     for i in percentiles:
         print(
-                f"The {i}th percentile value of {column_name} is \
+            f"The {i}th percentile value of {column_name} is \
                         {np.percentile(data[column_name].dropna(), i)}"
-                        )
+        )
     print("-" * 100)
 
 
 def plot_continuous_variables(
-        data,
-        column_name,
-        plots=["distplot", "CDF", "box", "violin"],
-        scale_limits=None,
-        figsize=(20, 8),
-        histogram=True,
-        log_scale=False,
-        ):
+    data,
+    column_name,
+    plots=["distplot", "CDF", "box", "violin"],
+    scale_limits=None,
+    figsize=(20, 8),
+    histogram=True,
+    log_scale=False,
+):
 
     """
     Function to plot continuous variables distribution
@@ -595,9 +600,9 @@ def plot_continuous_variables(
     if scale_limits:
         # taking only the data within the specified limits
         data_to_plot[column_name] = data[column_name][
-                (data[column_name] > scale_limits[0])
-                & (data[column_name] < scale_limits[1])
-                ]
+            (data[column_name] > scale_limits[0])
+            & (data[column_name] < scale_limits[1])
+        ]
 
     number_of_subplots = len(plots)
     plt.figure(figsize=figsize)
@@ -611,37 +616,37 @@ def plot_continuous_variables(
             # making the percentile DataFrame for both positive and
             # negative Class Labels
             percentile_values_0 = (
-                    data_to_plot[data_to_plot.TARGET == 0][[column_name]]
-                    .dropna()
-                    .sort_values(by=column_name)
-                    )
+                data_to_plot[data_to_plot.TARGET == 0][[column_name]]
+                .dropna()
+                .sort_values(by=column_name)
+            )
             percentile_values_0["Percentile"] = [
-                    ele / (len(percentile_values_0) - 1)
-                    for ele in range(len(percentile_values_0))
-                    ]
+                ele / (len(percentile_values_0) - 1)
+                for ele in range(len(percentile_values_0))
+            ]
 
             percentile_values_1 = (
-                    data_to_plot[data_to_plot.TARGET == 1][[column_name]]
-                    .dropna()
-                    .sort_values(by=column_name)
-                    )
+                data_to_plot[data_to_plot.TARGET == 1][[column_name]]
+                .dropna()
+                .sort_values(by=column_name)
+            )
             percentile_values_1["Percentile"] = [
-                    ele / (len(percentile_values_1) - 1)
-                    for ele in range(len(percentile_values_1))
-                    ]
+                ele / (len(percentile_values_1) - 1)
+                for ele in range(len(percentile_values_1))
+            ]
 
             plt.plot(
-                    percentile_values_0[column_name],
-                    percentile_values_0["Percentile"],
-                    color="red",
-                    label="Non-Defaulters",
-                    )
+                percentile_values_0[column_name],
+                percentile_values_0["Percentile"],
+                color="red",
+                label="Non-Defaulters",
+            )
             plt.plot(
-                    percentile_values_1[column_name],
-                    percentile_values_1["Percentile"],
-                    color="black",
-                    label="Defaulters",
-                    )
+                percentile_values_1[column_name],
+                percentile_values_1["Percentile"],
+                color="black",
+                label="Defaulters",
+            )
             plt.xlabel(column_name)
             plt.ylabel("Probability")
             plt.title("CDF of {}".format(column_name))
@@ -652,17 +657,17 @@ def plot_continuous_variables(
 
         if ele == "distplot":
             sns.distplot(
-                    data_to_plot[column_name][data["TARGET"] == 0].dropna(),
-                    label="Non-Defaulters",
-                    hist=False,
-                    color="red",
-                    )
+                data_to_plot[column_name][data["TARGET"] == 0].dropna(),
+                label="Non-Defaulters",
+                hist=False,
+                color="red",
+            )
             sns.distplot(
-                    data_to_plot[column_name][data["TARGET"] == 1].dropna(),
-                    label="Defaulters",
-                    hist=False,
-                    color="black",
-                    )
+                data_to_plot[column_name][data["TARGET"] == 1].dropna(),
+                label="Defaulters",
+                hist=False,
+                color="black",
+            )
             plt.xlabel(column_name)
             plt.ylabel("Probability Density")
             plt.legend(fontsize="medium")
@@ -686,6 +691,7 @@ def plot_continuous_variables(
                 plt.ylabel(f"{column_name} (log Scale)")
 
     plt.show()
+
 
 def describe_data(path_description):
     """
@@ -745,7 +751,7 @@ def sidebar_options():
     return selection
 
 
-def call_api(input_data: int):
+def call_api(input_data: int, API_url: str, df: pd.DataFrame):
     """
     This function calls the Flask API with the client Id (input data).
 
@@ -772,8 +778,7 @@ def call_api(input_data: int):
         proba = 1 - API_data["proba"]
 
     # affichage de la prédiction
-    prediction = API_data["proba"]
-    classe = df[df["ID"] == int(id_input)]["TARGET"].values[0]
+    classe = df[df["ID"] == input_data]["TARGET"].values[0]
 
     if np.isnan(classe):
         classe_reelle = "pas de données réelles pour ce client (client test)"
@@ -785,11 +790,8 @@ def call_api(input_data: int):
         )
 
     chaine_prediction = (
-        "Prédiction : **"
-        + etat
-        + "** avec **"
-        + str(round(proba * 100))
-        + "%** de\
+        "Prédiction : **" + etat + "** avec **" + str(
+            round(proba * 100)) + "%** de\
                 risque de défaut "
     )
     chaine_realite = "classe réelle : " + str(classe_reelle)
@@ -857,7 +859,7 @@ def diplay_filtered_client_visualisation(df_filtered):
     st.write("Description des variables :")
     # dict_df = dict(zip(df.columns, df.columns))
 
-    Colonnes = list(df.columns)
+    Colonnes = list(df_filtered.columns)
 
     Col_choice = st.multiselect(
         "variables à observer dans les données filtrées \
@@ -870,3 +872,5 @@ def diplay_filtered_client_visualisation(df_filtered):
 
     informations_data(df_filtered)
     visualisation_distribution_target(df_filtered)
+
+'''
