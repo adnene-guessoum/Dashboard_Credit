@@ -13,6 +13,11 @@ Elle n'est pas non plus déployé pour l'instant pour économiser un peu sur les
 
 Le code est disponible dans le dossier Flask_api.
 
+# TODO:
+- [ ] veille sur le package shap ( puis reprendre dump shap-values et tree explainers)
+- [ ] resérialiser le modéle avec dernière version d'xgboost
+- [ ] redéployer les applications
+
 # Anciennes versions :
 
 ## Streamlit: repo archivé https://github.com/adnene-guessoum/Projet_scoring_credit

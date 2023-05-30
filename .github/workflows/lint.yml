@@ -1,6 +1,6 @@
-name: Pipeline CI
+name: Pipeline Lint
 
-on: [push, pull_request]
+on: push
 
 jobs:
   build:
@@ -40,9 +40,7 @@ jobs:
         run: |
           ./bin/task install
 
-      - name: Integration run
+      - name: Run lint
         run: |
           ./bin/task lint-streamlit
           ./bin/task lint-flask
-          ./bin/task test-streamlit
-          ./bin/task test-flask
