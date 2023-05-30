@@ -42,4 +42,7 @@ jobs:
 
       - name: Integration run
         run: |
-          ./bin/task integration
+          ./bin/task lint-streamlit
+          ./bin/task lint-flask
+          ./bin/task test-streamlit
+          ./bin/task test-flask
