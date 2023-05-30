@@ -13,19 +13,27 @@ Elle n'est pas non plus déployé pour l'instant pour économiser un peu sur les
 
 Le code est disponible dans le dossier Flask_api.
 
+# Anciennes versions :
+
+## Streamlit: repo archivé https://github.com/adnene-guessoum/Projet_scoring_credit
+## Flask: repo archivé https://github.com/adnene-guessoum/scoring_credit_Flask_API
+
 # Description du projet:
-	# Contexte:
-		scoring de demande de crédit avec déploiement du modèle. déterminer si un client sera en mesure de rembourser un crédit et déployer un dashboard à l'usage de l'entreprise.
 
-	# Outils:
-		# - Python, Flask, Streamlit
-		# - XGBoost, SHAP, BorutaShap
-		# - données kaggle: https://www.kaggle.com/competitions/home-credit-default-risk/data
-		# - PSQL, csv
+## Contexte:
+	scoring de demande de crédit avec déploiement du modèle. déterminer si un client sera en mesure de rembourser un crédit et déployer un dashboard à l'usage de l'entreprise.
 
-	# Repo contient:
-		# notebooks de développement des modèles (EDA, Feature engineering, Modèlisations et comparaisons, tests shap,...)
-		# notes de présentations et documents de synthèses / illustration du projet
-		# code de l'application streamlit
-		# code de l'API Flask
-		# CI, tests, lint, format avec Poetry, Task et github actions
+## Outils:
+
+- Python, Flask, Streamlit
+- XGBoost, SHAP, BorutaShap
+- données kaggle: https://www.kaggle.com/competitions/home-credit-default-risk/data
+- PSQL, csv
+
+## Repo contient:
+
+- notebooks de développement des modèles (EDA, Feature engineering, Modèlisations et comparaisons, tests shap,...)
+- notes de présentations et documents de synthèses / illustration du projet
+- code de l'application streamlit
+- code de l'API Flask
+- CI, tests, lint, format avec Poetry, Task et github actions
