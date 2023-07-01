@@ -17,36 +17,36 @@ jobs:
       matrix:
         python-version: ["3.10"]
 
-  steps:
-    - uses: actions/checkout@v3
+    steps:
+      - uses: actions/checkout@v3
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    # Load cached dependencies
-    - name: Load cached venv
-      id: cached-poetry-dependencies
-      uses: actions/cache@v2
-      with:
-        path: .venv
-        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      # Load cached dependencies
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
 
-    - name: Install Task
-      run: |
-        sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
+      - name: Install Task
+        run: |
+          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
 
-    - name: Install and upgrade pip and poetry
-      run: |
-        python -m pip install --upgrade pip poetry
+      - name: Install and upgrade pip and poetry
+        run: |
+          python -m pip install --upgrade pip poetry
 
-    # Install dependencies through task
-    - name: Install Dependencies
-      run: |
-        ./bin/task install
+      # Install dependencies through task
+      - name: Install Dependencies
+        run: |
+          ./bin/task install
 
-    - name: Run tests
-      run: |
-        ./bin/task test-streamlit
-        ./bin/task test-flask
+      - name: Run tests
+        run: |
+          ./bin/task test-streamlit
+          ./bin/task test-flask
