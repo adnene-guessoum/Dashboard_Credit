@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "flask-api"
+version = "0.1.0"
+description = "flask api for dashboard ML project"
+authors = ["Adnene Guessoum <adnen.guessoum@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "flask_api"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+flask = "^2.3.2"
+pandas = "^2.0.3"
+xgboost = "^1.7.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
