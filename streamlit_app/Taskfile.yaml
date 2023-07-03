@@ -6,46 +6,22 @@ tasks:
     cmds:
       - poetry install --no-root
 
-  lint-streamlit:
+  lint:
     desc: Lints the code and report issues.
     cmds:
-      #- poetry run mypy --install-types streamlit_app/ # --ignore-missing-imports
-      - poetry run black streamlit_app/
-      - poetry run flake8 streamlit_app/ --ignore=F405,F403,W503 --show-source --statistics --count
-      - poetry run pylint --disable=W0105 streamlit_app/
+      - poetry run mypy --install-types src/ # --ignore-missing-imports
+      - poetry run black src/
+      - poetry run flake8 src/ --ignore=F405,F403,W503 --show-source --statistics --count
+      - poetry run pylint --disable=W0105 src/
 
-  test-streamlit:
+  test:
     desc: Runs test on code
     cmds:
       - >
-        poetry run pytest
-        streamlit_app/
-        --cov=streamlit_app/
-        --cov-report=html
-        --disable-warnings
+        poetry run pytest src/
 
-  lint-flask:
-    desc: Lints the code and report issues.
-    cmds:
-      #- poetry run mypy --install-types flask_api/ # --ignore-missing-imports
-      - poetry run black flask_api/
-      - poetry run flake8 flask_api/ --ignore=F405,F403,W503 --show-source --statistics --count
-      - poetry run pylint flask_api/
-
-  test-flask:
-    desc: Runs test on code
-    cmds:
-      - >
-        poetry run pytest
-        flask_api/
-        --cov=flask_api/
-        --cov-report=html
-        --disable-warnings
-
-  integration:
+  complete:
     desc: run entire ci
     cmds:
       - task lint-streamlit
-      - task lint-flask
       - task test-streamlit
-      - task test-flask
