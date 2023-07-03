@@ -7,9 +7,8 @@ base de données (ID) et en fonction de ses caractéristiques
 """
 import pickle
 import flask
-from utils import home, predire_credit
-
 import pandas as pd
+from utils.controllers import home, predire_credit
 
 # Load model
 PATH_MODEL = "model/model_final.pickle.dat"
