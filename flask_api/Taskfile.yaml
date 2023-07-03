@@ -12,13 +12,13 @@ tasks:
       - poetry run mypy --install-types .
       - poetry run black .
       - poetry run flake8 . --show-source --statistics --count
-      - poetry run pylint src/
+      - poetry run pylint --recursive=y ./
 
   test:
     desc: Runs test on code
     cmds:
       - >
-        poetry run pytest src/
+        poetry run pytest ./
 
   complete:
     desc: run entire ci
