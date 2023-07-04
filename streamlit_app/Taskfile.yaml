@@ -9,7 +9,7 @@ tasks:
   lint:
     desc: Lints the code and report issues.
     cmds:
-      - poetry run mypy --install-types --approve src/ # --ignore-missing-imports
+      - poetry run mypy --install-types --non-interactive src/ # --ignore-missing-imports
       - poetry run black src/
       - poetry run flake8 src/ --ignore=F405,F403,W503 --show-source --statistics --count
       - poetry run pylint --disable=W0105 src/
