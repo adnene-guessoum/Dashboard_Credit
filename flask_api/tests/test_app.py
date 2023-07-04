@@ -2,7 +2,7 @@
     tests de l'app flask
 """
 import pytest
-from utils import home
+from utils.controllers import home
 from app import app
 
 app.config["TESTING"] = True

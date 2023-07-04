@@ -47,7 +47,7 @@ from sklearn.metrics import (  # type: ignore
     confusion_matrix,
 )
 from sklearn.metrics import fbeta_score, precision_score, recall_score
-import shap  # type: ignore
+import shap  # type: ignore # pylint: disable=import-error
 from .utils import load_data, cleaning
 
 shap.initjs()
@@ -554,9 +554,9 @@ def display_filtered_client_visualisation(dataframe: pd.DataFrame) -> pd.DataFra
 
     # get the parties with a number of members in the range of nb_mbrs
     # HERE: mypy type error "between is not a method of Series[float]"
-    mask_amount_credit = dataframe["AMT_CREDIT"].between(
+    mask_amount_credit = dataframe["AMT_CREDIT"].between(  # type: ignore
         amount_credit[0], amount_credit[1]
-    )  # type: ignore
+    )
 
     print(
         "mask_amount_credit : ", mask_amount_credit, "type : ", type(mask_amount_credit)

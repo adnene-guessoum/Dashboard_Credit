@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  dashboard:
+    image: "streamlit-container:dev"
+    container_name: dashboard
+    build:
+      context: ./streamlit_app
+      dockerfile: Dockerfile
+      cache_from:
+        - "streamlit-container:dev"
+    command: poetry run streamlit run src/main.py
+    ports:
+      - 3000:3000
+    depends_on:
+      - api
+    volumes:
+      - ./streamlit_app:/streamlit_app
+
+  api:
+    image: "flask-container:dev"
+    container_name: api
+    build:
+      context: ./flask_api
+      dockerfile: Dockerfile
+      cache_from:
+        - "flask-container:dev"
+    command: poetry run flask run
+    ports:
+      - 5000:5000
+    env_file:
+      - ./flask_api/.flaskenv
+    depends_on:
+      - db
+    volumes:
+      - ./flask_api:/flask_api
+
+  db:
+    image: postgres
+    restart: unless-stopped
+    env_file: .env
+    expose:
+      - 5432

@@ -1,0 +1,27 @@
+version: "3"
+
+tasks:
+  install:
+    desc: Installs the dependencies.
+    cmds:
+      - poetry install --no-root
+
+  lint:
+    desc: Lints the code and report issues.
+    cmds:
+      - poetry run mypy --install-types --non-interactive src/ # --ignore-missing-imports
+      - poetry run black src/
+      - poetry run flake8 src/ --ignore=F405,F403,W503 --show-source --statistics --count
+      - poetry run pylint --disable=W0105 src/
+
+  test:
+    desc: Runs test on code
+    cmds:
+      - >
+        poetry run pytest src/
+
+  complete:
+    desc: run entire ci
+    cmds:
+      - task lint
+      - task test

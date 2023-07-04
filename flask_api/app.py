@@ -7,18 +7,17 @@ base de données (ID) et en fonction de ses caractéristiques
 """
 import pickle
 import flask
-from utils import home, predire_credit
-
 import pandas as pd
+from utils.controllers import home, predire_credit
 
 # Load model
-PATH_MODEL = "flask_api/model/model_final.pickle.dat"
+PATH_MODEL = "model/model_final.pickle.dat"
 with open(PATH_MODEL, "rb") as file:
     model = pickle.load(file)
 
 # Load Dataframe
 # (temp restricted dataset en attendant psql database)
-PATH_DF = "flask_api/model/restricted_dataset"
+PATH_DF = "model/restricted_dataset"
 df = pd.read_csv(PATH_DF)
 df = df.drop(["Unnamed: 0"], axis=1)
 
