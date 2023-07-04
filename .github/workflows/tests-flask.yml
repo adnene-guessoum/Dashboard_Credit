@@ -1,6 +1,12 @@
-name: Pipeline Lint
+name: Tests flask
 
-on: push
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
@@ -10,6 +16,10 @@ jobs:
       fail-fast: true
       matrix:
         python-version: ["3.10"]
+
+    defaults:
+      run:
+        working-directory: ./flask_api
 
     steps:
       - uses: actions/checkout@v3
@@ -40,7 +50,7 @@ jobs:
         run: |
           ./bin/task install
 
-      - name: Run lint
+      - name: Run tests
         run: |
-          ./bin/task lint-streamlit
-          ./bin/task lint-flask
+          ./bin/task test-streamlit
+          ./bin/task test-flask

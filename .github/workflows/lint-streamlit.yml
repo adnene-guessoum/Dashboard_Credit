@@ -1,12 +1,6 @@
-name: Tests
+name: Lint streamlit
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: push
 
 jobs:
   build:
@@ -16,6 +10,10 @@ jobs:
       fail-fast: true
       matrix:
         python-version: ["3.10"]
+
+    defaults:
+      run:
+        working-directory: ./streamlit_app
 
     steps:
       - uses: actions/checkout@v3
@@ -46,7 +44,7 @@ jobs:
         run: |
           ./bin/task install
 
-      - name: Run tests
+      - name: Run lint
         run: |
-          ./bin/task test-streamlit
-          ./bin/task test-flask
+          ./bin/task lint-streamlit
+          ./bin/task lint-flask
