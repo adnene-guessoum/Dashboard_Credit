@@ -23,5 +23,5 @@ tasks:
   complete:
     desc: run entire ci
     cmds:
-      - task lint-streamlit
-      - task test-streamlit
+      - task lint
+      - task test

@@ -52,5 +52,4 @@ jobs:
 
       - name: Run tests
         run: |
-          ./bin/task test-streamlit
-          ./bin/task test-flask
+          ./bin/task test
