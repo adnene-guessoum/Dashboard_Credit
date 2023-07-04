@@ -47,7 +47,7 @@ from sklearn.metrics import (  # type: ignore
     confusion_matrix,
 )
 from sklearn.metrics import fbeta_score, precision_score, recall_score
-import shap  # type: ignore
+import shap  # type: ignore # pylint: disable=import-error
 from .utils import load_data, cleaning
 
 shap.initjs()
