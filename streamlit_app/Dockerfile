@@ -17,4 +17,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["poetry", "run", "streamlit", "run", "app.py"]
+ENTRYPOINT ["poetry", "run", "streamlit", "run", "app.py", "--server.port", "3000", "--server.address", "0.0.0.0"]

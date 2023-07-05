@@ -9,7 +9,7 @@ services:
       dockerfile: Dockerfile
       cache_from:
         - "streamlit-container:dev"
-    command: poetry run streamlit run src/main.py
+    command: poetry run streamlit run src/main.py --server.port=3000 --server.address=0.0.0.0
     ports:
       - 3000:3000
     depends_on:
@@ -25,7 +25,7 @@ services:
       dockerfile: Dockerfile
       cache_from:
         - "flask-container:dev"
-    command: poetry run flask run
+    command: poetry run flask run -h 0.0.0.0 -p 5000
     ports:
       - 5000:5000
     env_file:

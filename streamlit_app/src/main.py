@@ -23,12 +23,12 @@ from tools import (
 )
 
 # load small dataset:
-PATH_DF = "output_data/selected_feature_dataset"
+PATH_DF = "data/output_data/selected_feature_dataset"
 df = pd.read_csv(PATH_DF)
 # df = df.drop(["Unnamed: 0"], axis = 1)
 
 # Load variable descriptions:
-PATH_DESC = "output_data/desc_features.csv"
+PATH_DESC = "data/output_data/desc_features.csv"
 variables_description = load_data(PATH_DESC)
 
 liste_id = df["ID"].tolist()
@@ -63,8 +63,8 @@ with st.sidebar:
 
     st.sidebar.markdown("---")
     st.write("Description des variables :")
-    dict_desc = dict(zip(variables_description.Row, variables_description.Description))
-    dict_desc["ID"] = dict_desc.pop("SK_ID_CURR")
+    dict_desc = dict(zip(variables_description.Feature, variables_description.description))
+    #dict_desc["ID"] = dict_desc.pop("SK_ID_CURR")
 
     option = st.selectbox(
         "Veuillez indiquez la variable à expliquer :", dict_desc.keys()
@@ -75,4 +75,5 @@ with st.sidebar:
     st.write("quelques id clients disponibles si vous voulez tester l'app :")
     st.write(random.sample(liste_id, 50))
 
-    navigation(data, selection)
+# Main
+navigation(data, selection)
