@@ -54,30 +54,30 @@ shap.initjs()
 
 
 # load dataset:
-PATH_DF = "streamlit_app/output_data/selected_feature_dataset"
+PATH_DF = "data/output_data/selected_feature_dataset"
 data = pd.read_csv(PATH_DF)
 # df = df.drop(["Unnamed: 0"], axis = 1)
 
 # Load variable descriptions:
-PATH_DESC = "streamlit_app/output_data/desc_features.csv"
+PATH_DESC = "data/output_data/desc_features.csv"
 variables_description = load_data(PATH_DESC)
 
 liste_id = data["ID"].tolist()
 data = cleaning(data)
 
 # Load model
-PATH_MODEL = "streamlit_app/output_data/rec28052023_model_final.pickle.dat"
+PATH_MODEL = "data/output_data/rec28052023_model_final.pickle.dat"
 with open(PATH_MODEL, "rb") as f:
     model = pickle.load(f)
 # data = cleaning(df)
 
 # Load explainer:
-FILE_PATH = "streamlit_app/output_data/shap_values"
+FILE_PATH = "data/output_data/shap_values"
 with open(FILE_PATH, "rb") as f:
     shap_values = pickle.load(f)
 
 # model_explainer = pickle.load(open(FILE_PATH,'rb'))
-FILE_PATH = "streamlit_app/output_data/model_explainer_bis"
+FILE_PATH = "data/output_data/model_explainer_bis"
 try:
     with open(FILE_PATH, "rb") as f:
         model_explainer = pickle.load(f)
@@ -86,7 +86,7 @@ except (pickle.UnpicklingError, FileNotFoundError, AttributeError, TypeError, Wa
     st.error(ERROR_MESSAGE)
 
 # Load expected values:
-FILE_PATH = "streamlit_app/output_data/expected_values"
+FILE_PATH = "data/output_data/expected_values"
 with open(FILE_PATH, "rb") as f:
     exp_vals = pickle.load(f)
 
